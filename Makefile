@@ -1,20 +1,26 @@
 CC = gcc
-LDFLAGS = -L/opt/homebrew/lib -lglfw -framework OpenGL -framework Cocoa -framework IOKit
+TARGET = engine
+ARTIFACT_DIR=artifacts
+OBJ_DIR=objs
 
 SRCS = main.c glad/src/glad.c
-OBJS = $(SRCS:.c=.o)
-TARGET = engine
 INCLUDE_DIRS = /opt/homebrew/include glad/include
+LDFLAGS = -L/opt/homebrew/lib -lglfw -framework OpenGL -framework Cocoa -framework IOKit
+
+OBJS = $(addprefix $(ARTIFACT_DIR)/$(OBJ_DIR)/,$(notdir $(SRCS:.c=.o)))
 CFLAGS = -Wall -Wextra -std=c11 $(addprefix -I,$(INCLUDE_DIRS))
 
-$(TARGET): $(OBJS)
-	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
+vpath %.c $(sort $(dir $(SRCS)))
 
-%.o: %.c
+$(ARTIFACT_DIR)/$(TARGET): $(OBJS)
+	$(CC) $(OBJS) -o $(ARTIFACT_DIR)/$(TARGET) $(LDFLAGS)
+
+$(ARTIFACT_DIR)/$(OBJ_DIR)/%.o: %.c
+	@mkdir -p $(ARTIFACT_DIR)/$(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -rf $(ARTIFACT_DIR) $(TARGET)
 
 print-%:
 	@echo $* = $($*)
