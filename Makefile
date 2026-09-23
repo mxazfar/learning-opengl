@@ -3,8 +3,8 @@ TARGET = engine
 ARTIFACT_DIR=artifacts
 OBJ_DIR=objs
 
-SRCS = main.c glad/src/glad.c
-INCLUDE_DIRS = /opt/homebrew/include glad/include
+SRCS = main.c glad/src/glad.c shaders/simple_vertex_shader.c shaders/simple_fragment_shader.c
+INCLUDE_DIRS = /opt/homebrew/include glad/include shaders/include
 LDFLAGS = -L/opt/homebrew/lib -lglfw -framework OpenGL -framework Cocoa -framework IOKit
 
 OBJS = $(addprefix $(ARTIFACT_DIR)/$(OBJ_DIR)/,$(notdir $(SRCS:.c=.o)))
