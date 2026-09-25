@@ -1,8 +1,7 @@
 // Interfaces used
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <simple_fragment_shader.h>
-#include <simple_vertex_shader.h>
+#include "shader_manager.h"
 #include "utility.h"
 
 // Standard library includes
@@ -17,23 +16,12 @@
  *****************************************************************************/
 
 typedef struct
-{
-    unsigned int handle;
-    int init_success;
-    char infoLog[512];
-} shader_s;
-
-typedef struct
 { 
     GLFWwindow* window;
 
     unsigned int vertex_buffer_object;
-
-    shader_s vertex_shader;
-    shader_s fragment_shader;
-
-    unsigned int shader_program_handle;
     unsigned int vertex_array_handle;
+    shader_program_s shader_program;
 } engine_manager_s;
 
 /******************************************************************************
@@ -61,7 +49,7 @@ static void renderLoop(void)
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glUseProgram(em.shader_program_handle);
+    glUseProgram(em.shader_program.handle);
     glBindVertexArray(em.vertex_array_handle);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -108,49 +96,6 @@ static void setupDataMovement(void)
     // offset=offset of where the data begins in the VBO
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-}
-
-/*
- * Compiles each shader from its source
- * Creates shader program and links all compiled shaders
-*/
-static void setupShaders(void)
-{
-    // setup vertex shader
-    em.vertex_shader.handle = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(em.vertex_shader.handle, 1, &simpleVertexShaderSource, NULL);
-    glCompileShader(em.vertex_shader.handle);
-    glGetShaderiv(em.vertex_shader.handle, GL_COMPILE_STATUS, &em.vertex_shader.init_success);
-
-    // check that shader compiled successfully
-    if(!em.vertex_shader.init_success)
-    {
-        glGetShaderInfoLog(em.vertex_shader.handle, 512, NULL, em.vertex_shader.infoLog);
-	fprintf(stderr, "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n %s", em.vertex_shader.infoLog);
-    }
-
-    // setup fragment shader
-    em.fragment_shader.handle = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(em.fragment_shader.handle, 1, &simpleFragmentShaderSource, NULL);
-    glCompileShader(em.fragment_shader.handle);
-    glGetShaderiv(em.fragment_shader.handle, GL_COMPILE_STATUS, &em.fragment_shader.init_success);
-
-    // check that fragment shader compiled successfully
-    if(!em.fragment_shader.init_success)
-    {
-        glGetShaderInfoLog(em.fragment_shader.handle, 512, NULL, em.fragment_shader.infoLog);
-	fprintf(stderr, "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n %s", em.fragment_shader.infoLog);
-    }
-
-    // create shader program, link our two shaders to it, and use the program
-    em.shader_program_handle = glCreateProgram();
-    glAttachShader(em.shader_program_handle, em.vertex_shader.handle);
-    glAttachShader(em.shader_program_handle, em.fragment_shader.handle);
-    glLinkProgram(em.shader_program_handle);
-
-    // shaders can be deleted now since they are baked into the program
-    glDeleteShader(em.vertex_shader.handle);
-    glDeleteShader(em.fragment_shader.handle);
 }
 
 /******************************************************************************
@@ -222,7 +167,7 @@ int main(void)
 
     setupDataMovement();
 
-    setupShaders();
+    em.shader_program = SHADER_linkShaderProgram("simple program", "shaders/simple_vertex_shader.glsl", "shaders/simple_fragment_shader.glsl");
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(em.window))

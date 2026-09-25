@@ -2,9 +2,11 @@ CC = gcc
 TARGET = engine
 ARTIFACT_DIR=artifacts
 OBJ_DIR=objs
+SHADER_DIR=shaders
 
-SRCS = main.c glad/src/glad.c shaders/simple_vertex_shader.c shaders/simple_fragment_shader.c
-INCLUDE_DIRS = /opt/homebrew/include glad/include shaders/include
+SRCS = shader_manager.c main.c glad/src/glad.c
+SHADER_SOURCE = $(addprefix $(ARTIFACT_DIR)/,$(wildcard $(SHADER_DIR)/*))
+INCLUDE_DIRS = /opt/homebrew/include glad/include
 LDFLAGS = -L/opt/homebrew/lib -lglfw -framework OpenGL -framework Cocoa -framework IOKit
 
 OBJS = $(addprefix $(ARTIFACT_DIR)/$(OBJ_DIR)/,$(notdir $(SRCS:.c=.o)))
@@ -12,12 +14,16 @@ CFLAGS = -Wall -Wextra -std=c11 $(addprefix -I,$(INCLUDE_DIRS))
 
 vpath %.c $(sort $(dir $(SRCS)))
 
-$(ARTIFACT_DIR)/$(TARGET): $(OBJS)
+$(ARTIFACT_DIR)/$(TARGET): $(OBJS) $(SHADER_SOURCE)
 	$(CC) $(OBJS) -o $(ARTIFACT_DIR)/$(TARGET) $(LDFLAGS)
 
 $(ARTIFACT_DIR)/$(OBJ_DIR)/%.o: %.c
 	@mkdir -p $(ARTIFACT_DIR)/$(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
+
+$(ARTIFACT_DIR)/$(SHADER_DIR)/%: $(SHADER_DIR)/%
+	@mkdir -p $(ARTIFACT_DIR)/$(SHADER_DIR)
+	cp $< $@
 
 clean:
 	rm -rf $(ARTIFACT_DIR) $(TARGET)
