@@ -5,8 +5,8 @@
 #include "utility.h"
 
 // Standard library includes
+#include <math.h>
 #include <stdio.h>
-
 
 #define DEFAULT_WIDTH	800U
 #define DEFAULT_HEIGHT	600U
@@ -50,6 +50,14 @@ static void renderLoop(void)
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(em.shader_program.handle);
+
+    float time = glfwGetTime();
+    float redValue = (cos(2*time) / 3.0f) + 0.5f;
+    float greenValue = (sin(time) / 2.0f) + 0.5f;
+    int vertexColorLocation = glGetUniformLocation(em.shader_program.handle, "ourColor");
+
+    glUniform4f(vertexColorLocation, redValue, greenValue, 0.0f, 1.0f);
+
     glBindVertexArray(em.vertex_array_handle);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
