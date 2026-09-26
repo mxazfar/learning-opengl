@@ -31,11 +31,11 @@ typedef struct
 static engine_manager_s em;
 static float vertices[] = 
 {
-    -0.5f, -0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
-    0.0f, 0.5f, 0.0f
+    // positions        // colors
+    -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // BR
+    0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // BL
+    0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f  // T
 };
-
 
 /******************************************************************************
  *                             PRIVATE FUNCTIONS                             *
@@ -50,13 +50,6 @@ static void renderLoop(void)
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(em.shader_program.handle);
-
-    float time = glfwGetTime();
-    float redValue = (cos(2*time) / 3.0f) + 0.5f;
-    float greenValue = (sin(time) / 2.0f) + 0.5f;
-    int vertexColorLocation = glGetUniformLocation(em.shader_program.handle, "ourColor");
-
-    glUniform4f(vertexColorLocation, redValue, greenValue, 0.0f, 1.0f);
 
     glBindVertexArray(em.vertex_array_handle);
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -102,8 +95,13 @@ static void setupDataMovement(void)
     // normalize=false (data is floats)
     // stride=how far apart subseqent verticies are (one vertice is 3 dimensions=3 floats)
     // offset=offset of where the data begins in the VBO
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+
     glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
 }
 
 /******************************************************************************
